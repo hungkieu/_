@@ -25,6 +25,7 @@ var _ = (function() {
     __querySelector.call(this, selector, props.parent);
 
     this.selector = selector;
+    this[0] = this.elements[0];
   }
 
   LowLine.prototype.find = function(selector) {
@@ -50,6 +51,58 @@ var _ = (function() {
     return this;
   }
 
+  LowLine.prototype.class = function(className, options = { force: false, all: false }) {
+    const { force, all } = options;
+    if(!className || className == '') return this[0].className;
+
+    const setClass = function(element) {
+      if (force) {
+        element.className = className;
+      } else {
+        className.split(' ').forEach(function(cn) {
+          element.classList.toggle(cn);
+        });
+      }
+    }
+
+    if (all) {
+      __loop.call(this, setClass);
+    } else {
+      setClass(this[0]);
+    }
+
+    return this;
+  }
+
+  LowLine.prototype.attr = function(attr, value) {
+    if (!attr && !value) {
+      const attributes = this[0].attributes;
+      const result = {};
+
+      Object.keys(attributes).forEach(function(key) {
+        result[attributes[key].nodeName] = attributes[key].nodeValue;
+      });
+
+      return result;
+    }
+
+    if (_.isString(attr) && !value) {
+      const element = this[0];
+      const arr = attr.split(' ');
+      const result = arr.map(function(key) {
+        return {[key]: element.getAttribute(key) };
+      });
+
+      return arr.length == 1 ? result[0][arr] : result;
+    }
+
+    if (_.isString(attr) && value) {
+      this[0].setAttribute(attr, value);
+    }
+    
+    return this;
+  }
+
   const defaultProps = {
     parent: document
   }
@@ -62,8 +115,25 @@ var _ = (function() {
 })();
 
 (function test(_) {
+  const type = {
+    string: "[object String]",
+    object: "[object Object]"
+  }
+
+  function getRawText(o) {
+    return Object.prototype.toString.call(o);
+  }
+
   _.isElement = function(o) {
     return o && o instanceof Element;
+  }
+
+  _.isString = function(o) {
+    return o && getRawText(o) == type.string;
+  }
+
+  _.isObject = function(o) {
+    return o && getRawText(o) == type.object;
   }
 })(_);
 
