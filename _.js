@@ -51,8 +51,16 @@ var _ = (function() {
     return this;
   }
 
-  LowLine.prototype.class = function(className, options = { force: false, all: false }) {
-    const { force, all } = options;
+  LowLine.prototype.class = function(
+    className,
+    options = {
+      add: false,
+      remove: false,
+      force: false,
+      all: false 
+    }
+  ) {
+    const { force, all, add, remove } = options;
     if(!className || className == '') return this[0].className;
 
     const setClass = function(element) {
@@ -60,7 +68,13 @@ var _ = (function() {
         element.className = className;
       } else {
         className.split(' ').forEach(function(cn) {
-          element.classList.toggle(cn);
+          if(add) {
+            element.classList.add(cn);
+          } else if(remove) {
+            element.classList.remove(cn);
+          } else {
+            element.classList.toggle(cn);
+          }
         });
       }
     }
@@ -101,6 +115,28 @@ var _ = (function() {
     }
     
     return this;
+  }
+
+  LowLine.prototype.prop = function(property, value) {
+    if(value) {
+      this[0][property] = value;
+      return this;
+    }
+
+    return this[0][property];
+  }
+
+  LowLine.prototype.data = function(key, value) {
+    key = key.replace(/-([a-z0-9])/g, function(match, group1, offset) {
+      return offset > 0 ? group1.toUpperCase() : match;
+    });
+
+    if (value) {
+      this[0].dataset[key] = value;
+      return this;
+    }
+
+    return this[0].dataset[key];
   }
 
   const defaultProps = {
